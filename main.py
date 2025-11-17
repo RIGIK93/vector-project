@@ -1,3 +1,11 @@
+import math
+
+# --- Constants ---
+# Earth's circumference in meters for a simplified, flat-Earth projection
+EARTH_CIRCUMFERENCE = 40_000_000
+# The distance in meters corresponding to 1 degree of longitude/latitude
+DEGREES_TO_METERS = EARTH_CIRCUMFERENCE / 360
+
 def dms_to_decimal(dms_string):
     """
     Converts a Degree-Minute-Second string to Decimal Degrees.
@@ -16,6 +24,11 @@ def dms_to_decimal(dms_string):
         seconds = float(parts[2])
         direction = parts[3].upper()  # Ensures direction is uppercase for comparison
 
+        # --- Added Input Validation for Minutes/Seconds ---
+        if not (0 <= minutes < 60) or not (0 <= seconds < 60):
+             raise ValueError("Minutes and seconds must be between 0 and 59.99...")
+        # ------------------------------------------------
+
         if direction not in ["N", "S", "E", "W"]:
             raise ValueError("Invalid direction. Must be N, S, E, or W.")
 
@@ -28,15 +41,56 @@ def dms_to_decimal(dms_string):
 
         return decimal_degrees
 
-    except (ValueError, IndexError):
+    except (ValueError, IndexError) as e:
+        # Re-raise a more specific error based on the initial check
+        if isinstance(e, ValueError) and "Invalid format" in str(e):
+             raise
         # Catches errors from incorrect string parts or non-numeric values
         raise ValueError(
             "Invalid input. Ensure degrees, minutes, and seconds are numbers."
         )
 
 
+def calculate_flat_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculates the distance (in meters) and standard angle (in degrees)
+    between two points (lat, lon) using the flat-Earth (Pythagorean) approximation.
+    
+    Arguments:
+        lat1, lon1 (float): Latitude and Longitude of Point 1 (Decimal Degrees).
+        lat2, lon2 (float): Latitude and Longitude of Point 2 (Decimal Degrees).
+
+    Returns:
+        tuple: (distance_meters, angle_degrees)
+    """
+    
+    # 1. Convert change in degrees to change in meters (linear approximation)
+    delta_lat_meters = (lat2 - lat1) * DEGREES_TO_METERS
+    # For a flat Earth approximation, we simplify longitude scaling by assuming 
+    # the cosine factor is negligible or accounted for in the 40M circumference.
+    # In a true 2D projection, the longitude delta would be scaled by cos(mid_latitude).
+    # Since the request asks for a simple Pythagorean metric with a constant scale:
+    delta_lon_meters = (lon2 - lon1) * DEGREES_TO_METERS
+
+    # 2. Calculate distance using Pythagorean theorem: distance = sqrt(dx^2 + dy^2)
+    distance_meters = math.sqrt(delta_lat_meters**2 + delta_lon_meters**2)
+
+    # 3. Calculate standard angle (0 degrees = East, 90 degrees = North)
+    # The result is in radians, so convert to degrees.
+    # Arguments for atan2 are (y, x) -> (delta_lat_meters, delta_lon_meters)
+    angle_radians = math.atan2(delta_lat_meters, delta_lon_meters)
+    angle_degrees = math.degrees(angle_radians)
+    
+    # Standard angle is often 0 to 360 (or -180 to 180). atan2 gives -180 to 180.
+    # We'll normalize it to 0 to 360 for consistency (optional but helpful).
+    if angle_degrees < 0:
+        angle_degrees += 360
+
+    return distance_meters, angle_degrees
+
+
 def perform_action(option_name):
-    """A function that is called by menu options 2-3."""
+    """A function that is called by menu options 3-4."""
     print(f"\n-> You have selected '{option_name}'. This function has been called.\n")
 
 
@@ -46,13 +100,14 @@ def main_menu():
         # Display the menu options
         print("--- Main Menu ---")
         print("1. Convert DMS to Decimal Degrees")
-        print("2. Call Option B")
-        print("3. Call Option C")
-        print("4. Exit Program")
+        print("2. Calculate Flat-Earth Distance (Pythagorean)") # New Option
+        print("3. Call Option B")
+        print("4. Call Option C")
+        print("5. Exit Program")
         print("-----------------")
 
         # Get user input
-        choice = input("Please enter your choice (1-4): ")
+        choice = input("Please enter your choice (1-5): ")
 
         # Process the user's choice
         if choice == "1":
@@ -64,18 +119,40 @@ def main_menu():
                 )  # Formats to 6 decimal places
             except ValueError as e:
                 print(f"\n! Error: {e}\n")  # Prints the specific error message
-
+                
         elif choice == "2":
-            perform_action("Option B")
+            # --- New Functionality Block ---
+            try:
+                print("\nEnter coordinates for Point 1 (P1):")
+                lat1 = float(input("Enter Latitude (e.g., 40.7128): "))
+                lon1 = float(input("Enter Longitude (e.g., -74.0060): "))
+
+                print("\nEnter coordinates for Point 2 (P2):")
+                lat2 = float(input("Enter Latitude (e.g., 40.7130): "))
+                lon2 = float(input("Enter Longitude (e.g., -74.0055): "))
+
+                distance, angle = calculate_flat_distance(lat1, lon1, lat2, lon2)
+
+                print("\n--- Results (Flat-Earth Approximation) ---")
+                print(f"**Distance:** {distance:,.2f} meters")
+                print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
+                print("------------------------------------------\n")
+
+            except ValueError:
+                print("\n! Error: Invalid input. Please ensure coordinates are numeric.\n")
+            # -------------------------------
+
         elif choice == "3":
-            perform_action("Option C")
+            perform_action("Option B")
         elif choice == "4":
+            perform_action("Option C")
+        elif choice == "5":
             print("\nExiting the program. Goodbye! 👋")
             break  # Exit the while loop
         else:
             # Handle invalid input
             print(
-                f"\n! Invalid input: '{choice}'. Please enter a number between 1 and 4.\n"
+                f"\n! Invalid input: '{choice}'. Please enter a number between 1 and 5.\n"
             )
         input("Press enter to continue...")
 
