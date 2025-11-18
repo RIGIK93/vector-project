@@ -145,13 +145,11 @@ def main_menu():
         print("1. Convert DMS to Decimal Degrees")
         print("2. Calculate Flat-Earth Distance (Pythagorean)")
         print("3. Calculate Great-Circle Distance (Haversine)") # Option 3 is now Haversine
-        print("4. Call Option B") # Renamed from Option 3
-        print("5. Call Option C") # Renamed from Option 4
-        print("6. Exit Program") # Renamed from Option 5
+        print("4. Exit Program") # Renamed from Option 5
         print("-----------------")
 
         # Get user input
-        choice = input("Please enter your choice (1-6): ")
+        choice = input("Please enter your choice (1-4): ")
 
         # Process the user's choice
         if choice == "1":
@@ -208,12 +206,7 @@ def main_menu():
             except ValueError:
                 print("\n! Error: Invalid input. Please ensure coordinates are numeric.\n")
             # -------------------------------------------
-
         elif choice == "4":
-            perform_action("Option B")
-        elif choice == "5":
-            perform_action("Option C")
-        elif choice == "6":
             print("\nExiting the program. Goodbye! 👋")
             break  # Exit the while loop
         else:
