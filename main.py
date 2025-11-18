@@ -118,17 +118,21 @@ def calculate_haversine_distance(lat1, lon1, lat2, lon2):
     
     # Haversine formula: a = sin²(Δφ/2) + cos(φ1) * cos(φ2) * sin²(Δλ/2)
     # The haversine function is defined as hav(θ) = sin²(θ/2)
-    a = math.sin(d_phi / 2)**2 + \
+    a = math.sin(d_phi / 2) * math.sin(d_phi / 2) + \
         math.cos(phi1) * math.cos(phi2) * \
-        math.sin(d_lambda / 2)**2
+        math.sin(d_lambda / 2) * math.sin(d_lambda / 2)
         
     # Central angle: c = 2 * atan2(sqrt(a), sqrt(1-a))
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     
+    i_component = EARTH_RADIUS_METERS * d_lambda
+    j_component = EARTH_RADIUS_METERS * d_phi
+    theta = math.degrees(math.atan2(j_component, i_component))
+
     # Distance = R * c
     distance_meters = EARTH_RADIUS_METERS * c
     
-    return distance_meters
+    return (distance_meters, theta, i_component, j_component)
 # ----------------------------------------
 
 
@@ -196,16 +200,20 @@ def main_menu():
                 lat2 = float(input("Enter Latitude (e.g., 40.7130): "))
                 lon2 = float(input("Enter Longitude (e.g., -74.0055): "))
 
-                distance = calculate_haversine_distance(lat1, lon1, lat2, lon2)
+                distance, angle, i, j = calculate_haversine_distance(lat1, lon1, lat2, lon2)
 
                 print("\n--- Results (Haversine Great-Circle Distance) ---")
                 print(f"**Distance:** {distance:,.2f} meters")
-                print(f"**Approximation:** Assumes a perfect sphere with R approx {EARTH_RADIUS_METERS}.")
+                print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
+                print(f"**i Component (East/West):** {i:,.2f} meters")
+                print(f"**j Component (North/South):** {j:,.2f} meters")
+                print(f"**Approximation:** Assumes a perfect sphere with radius approxamitely {EARTH_RADIUS_METERS}km.")
                 print("---------------------------------------------------\n")
 
             except ValueError:
                 print("\n! Error: Invalid input. Please ensure coordinates are numeric.\n")
             # -------------------------------------------
+
         elif choice == "4":
             print("\nExiting the program. Goodbye! 👋")
             break  # Exit the while loop
