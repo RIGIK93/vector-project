@@ -53,40 +53,38 @@ def dms_to_decimal(dms_string):
 
 def calculate_flat_distance(lat1, lon1, lat2, lon2):
     """
-    Calculates the distance (in meters) and standard angle (in degrees)
-    between two points (lat, lon) using the flat-Earth (Pythagorean) approximation.
+    Calculates the distance (in meters), standard angle (in degrees),
+    and the i (E/W) and j (N/S) components between two points.
     
     Arguments:
         lat1, lon1 (float): Latitude and Longitude of Point 1 (Decimal Degrees).
         lat2, lon2 (float): Latitude and Longitude of Point 2 (Decimal Degrees).
 
     Returns:
-        tuple: (distance_meters, angle_degrees)
+        tuple: (distance_meters, angle_degrees, component_i, component_j)
     """
     
-    # 1. Convert change in degrees to change in meters (linear approximation)
-    delta_lat_meters = (lat2 - lat1) * DEGREES_TO_METERS
-    # For a flat Earth approximation, we simplify longitude scaling by assuming 
-    # the cosine factor is negligible or accounted for in the 40M circumference.
-    # In a true 2D projection, the longitude delta would be scaled by cos(mid_latitude).
-    # Since the request asks for a simple Pythagorean metric with a constant scale:
-    delta_lon_meters = (lon2 - lon1) * DEGREES_TO_METERS
+    # Delta Longitude (East/West displacement, corresponds to 'i' component)
+    # i component (x-axis) = change in Lon * Scale
+    component_i = (lon2 - lon1) * DEGREES_TO_METERS
 
-    # 2. Calculate distance using Pythagorean theorem: distance = sqrt(dx^2 + dy^2)
-    distance_meters = math.sqrt(delta_lat_meters**2 + delta_lon_meters**2)
+    # Delta Latitude (North/South displacement, corresponds to 'j' component)
+    # j component (y-axis) = change in Lat * Scale
+    component_j = (lat2 - lat1) * DEGREES_TO_METERS
 
-    # 3. Calculate standard angle (0 degrees = East, 90 degrees = North)
-    # The result is in radians, so convert to degrees.
-    # Arguments for atan2 are (y, x) -> (delta_lat_meters, delta_lon_meters)
-    angle_radians = math.atan2(delta_lat_meters, delta_lon_meters)
+    # 1. Calculate distance using Pythagorean theorem: distance = sqrt(i^2 + j^2)
+    distance_meters = math.sqrt(component_i**2 + component_j**2)
+
+    # 2. Calculate standard angle (0 degrees = East, 90 degrees = North)
+    # The result is in radians. Arguments for atan2 are (y, x) -> (component_j, component_i)
+    angle_radians = math.atan2(component_j, component_i)
     angle_degrees = math.degrees(angle_radians)
     
-    # Standard angle is often 0 to 360 (or -180 to 180). atan2 gives -180 to 180.
-    # We'll normalize it to 0 to 360 for consistency (optional but helpful).
+    # Normalize angle to 0 to 360
     if angle_degrees < 0:
         angle_degrees += 360
 
-    return distance_meters, angle_degrees
+    return distance_meters, angle_degrees, component_i, component_j
 
 
 def perform_action(option_name):
@@ -100,7 +98,7 @@ def main_menu():
         # Display the menu options
         print("--- Main Menu ---")
         print("1. Convert DMS to Decimal Degrees")
-        print("2. Calculate Flat-Earth Distance (Pythagorean)") # New Option
+        print("2. Calculate Flat-Earth Distance (Pythagorean)")
         print("3. Call Option B")
         print("4. Call Option C")
         print("5. Exit Program")
@@ -131,11 +129,13 @@ def main_menu():
                 lat2 = float(input("Enter Latitude (e.g., 40.7130): "))
                 lon2 = float(input("Enter Longitude (e.g., -74.0055): "))
 
-                distance, angle = calculate_flat_distance(lat1, lon1, lat2, lon2)
+                distance, angle, i_comp, j_comp = calculate_flat_distance(lat1, lon1, lat2, lon2)
 
                 print("\n--- Results (Flat-Earth Approximation) ---")
                 print(f"**Distance:** {distance:,.2f} meters")
                 print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
+                print(f"**i Component (East/West):** {i_comp:,.2f} meters")
+                print(f"**j Component (North/South):** {j_comp:,.2f} meters")
                 print("------------------------------------------\n")
 
             except ValueError:
