@@ -202,7 +202,7 @@ def main_menu():
 
                 print("\n--- Results (Haversine Great-Circle Distance) ---")
                 print(f"**Distance:** {distance:,.2f} meters")
-                print(f"**Approximation:** Assumes a perfect sphere with $R \approx 6,371\text{ km}$.")
+                print(f"**Approximation:** Assumes a perfect sphere with R approx {EARTH_RADIUS_METERS}.")
                 print("---------------------------------------------------\n")
 
             except ValueError:
