@@ -6,6 +6,11 @@ EARTH_CIRCUMFERENCE = 40_000_000
 # The distance in meters corresponding to 1 degree of longitude/latitude
 DEGREES_TO_METERS = EARTH_CIRCUMFERENCE / 360
 
+# --- NEW CONSTANT FOR HAVERSINE ---
+# Average Earth radius in meters (used for Haversine distance)
+EARTH_RADIUS_METERS = 6_371_000 
+# -----------------------------------
+
 def dms_to_decimal(dms_string):
     """
     Converts a Degree-Minute-Second string to Decimal Degrees.
@@ -87,6 +92,46 @@ def calculate_flat_distance(lat1, lon1, lat2, lon2):
     return distance_meters, angle_degrees, component_i, component_j
 
 
+# --- NEW FUNCTION: HAVERSINE DISTANCE ---
+def calculate_haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculates the great-circle distance between two points on a sphere 
+    (Earth) using the Haversine formula.
+    
+    Arguments:
+        lat1, lon1 (float): Latitude and Longitude of Point 1 (Decimal Degrees).
+        lat2, lon2 (float): Latitude and Longitude of Point 2 (Decimal Degrees).
+
+    Returns:
+        float: Distance in meters.
+    """
+    # Convert decimal degrees to radians
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    
+    lambda1 = math.radians(lon1)
+    lambda2 = math.radians(lon2)
+
+    # Delta latitude and longitude
+    d_phi = phi2 - phi1
+    d_lambda = lambda2 - lambda1
+    
+    # Haversine formula: a = sin²(Δφ/2) + cos(φ1) * cos(φ2) * sin²(Δλ/2)
+    # The haversine function is defined as hav(θ) = sin²(θ/2)
+    a = math.sin(d_phi / 2)**2 + \
+        math.cos(phi1) * math.cos(phi2) * \
+        math.sin(d_lambda / 2)**2
+        
+    # Central angle: c = 2 * atan2(sqrt(a), sqrt(1-a))
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    # Distance = R * c
+    distance_meters = EARTH_RADIUS_METERS * c
+    
+    return distance_meters
+# ----------------------------------------
+
+
 def perform_action(option_name):
     """A function that is called by menu options 3-4."""
     print(f"\n-> You have selected '{option_name}'. This function has been called.\n")
@@ -99,13 +144,14 @@ def main_menu():
         print("--- Main Menu ---")
         print("1. Convert DMS to Decimal Degrees")
         print("2. Calculate Flat-Earth Distance (Pythagorean)")
-        print("3. Call Option B")
-        print("4. Call Option C")
-        print("5. Exit Program")
+        print("3. Calculate Great-Circle Distance (Haversine)") # Option 3 is now Haversine
+        print("4. Call Option B") # Renamed from Option 3
+        print("5. Call Option C") # Renamed from Option 4
+        print("6. Exit Program") # Renamed from Option 5
         print("-----------------")
 
         # Get user input
-        choice = input("Please enter your choice (1-5): ")
+        choice = input("Please enter your choice (1-6): ")
 
         # Process the user's choice
         if choice == "1":
@@ -119,7 +165,7 @@ def main_menu():
                 print(f"\n! Error: {e}\n")  # Prints the specific error message
                 
         elif choice == "2":
-            # --- New Functionality Block ---
+            # Flat-Earth Distance Block
             try:
                 print("\nEnter coordinates for Point 1 (P1):")
                 lat1 = float(input("Enter Latitude (e.g., 40.7128): "))
@@ -140,19 +186,40 @@ def main_menu():
 
             except ValueError:
                 print("\n! Error: Invalid input. Please ensure coordinates are numeric.\n")
-            # -------------------------------
-
+            
         elif choice == "3":
-            perform_action("Option B")
+            # --- NEW HAVERSINE FUNCTIONALITY BLOCK ---
+            try:
+                print("\nEnter coordinates for Point 1 (P1):")
+                lat1 = float(input("Enter Latitude (e.g., 40.7128): "))
+                lon1 = float(input("Enter Longitude (e.g., -74.0060): "))
+
+                print("\nEnter coordinates for Point 2 (P2):")
+                lat2 = float(input("Enter Latitude (e.g., 40.7130): "))
+                lon2 = float(input("Enter Longitude (e.g., -74.0055): "))
+
+                distance = calculate_haversine_distance(lat1, lon1, lat2, lon2)
+
+                print("\n--- Results (Haversine Great-Circle Distance) ---")
+                print(f"**Distance:** {distance:,.2f} meters")
+                print(f"**Approximation:** Assumes a perfect sphere with $R \approx 6,371\text{ km}$.")
+                print("---------------------------------------------------\n")
+
+            except ValueError:
+                print("\n! Error: Invalid input. Please ensure coordinates are numeric.\n")
+            # -------------------------------------------
+
         elif choice == "4":
-            perform_action("Option C")
+            perform_action("Option B")
         elif choice == "5":
+            perform_action("Option C")
+        elif choice == "6":
             print("\nExiting the program. Goodbye! 👋")
             break  # Exit the while loop
         else:
             # Handle invalid input
             print(
-                f"\n! Invalid input: '{choice}'. Please enter a number between 1 and 5.\n"
+                f"\n! Invalid input: '{choice}'. Please enter a number between 1 and 6.\n"
             )
         input("Press enter to continue...")
 
