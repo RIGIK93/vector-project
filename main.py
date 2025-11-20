@@ -161,7 +161,7 @@ def main_menu():
                 dms_input = input("Enter DMS (e.g., 40 44 55 N or 73 59 11 W): ")
                 decimal_result = dms_to_decimal(dms_input)
                 print(
-                    f"\n-> Decimal Degrees: {decimal_result:.6f}\n"
+                    f"\n-> Decimal Degrees: {decimal_result}\n"
                 )  # Formats to 6 decimal places
             except ValueError as e:
                 print(f"\n! Error: {e}\n")  # Prints the specific error message
@@ -180,10 +180,10 @@ def main_menu():
                 distance, angle, i_comp, j_comp = calculate_flat_distance(lat1, lon1, lat2, lon2)
 
                 print("\n--- Results (Flat-Earth Approximation) ---")
-                print(f"**Distance:** {distance:,.2f} meters")
-                print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
-                print(f"**i Component (East/West):** {i_comp:,.2f} meters")
-                print(f"**j Component (North/South):** {j_comp:,.2f} meters")
+                print(f"**Distance:** {distance } meters")
+                print(f"**Standard Angle:** {angle} degrees (0° = East, 90° = North)")
+                print(f"**i Component (East/West):** {i_comp} meters")
+                print(f"**j Component (North/South):** {j_comp} meters")
                 print("------------------------------------------\n")
 
             except ValueError:
@@ -203,10 +203,10 @@ def main_menu():
                 distance, angle, i, j = calculate_haversine_distance(lat1, lon1, lat2, lon2)
 
                 print("\n--- Results (Haversine Great-Circle Distance) ---")
-                print(f"**Distance:** {distance:,.2f} meters")
-                print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
-                print(f"**i Component (East/West):** {i:,.2f} meters")
-                print(f"**j Component (North/South):** {j:,.2f} meters")
+                print(f"**Distance:** {distance } meters")
+                print(f"**Standard Angle:** {angle} degrees (0° = East, 90° = North)")
+                print(f"**i Component (East/West):** {i} meters")
+                print(f"**j Component (North/South):** {j} meters")
                 print(f"**Approximation:** Assumes a perfect sphere with radius approxamitely {(EARTH_RADIUS_METERS / 1000):.0f}km.")
                 print("---------------------------------------------------\n")
 
