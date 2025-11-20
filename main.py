@@ -207,7 +207,7 @@ def main_menu():
                 print(f"**Standard Angle:** {angle:.2f} degrees (0° = East, 90° = North)")
                 print(f"**i Component (East/West):** {i:,.2f} meters")
                 print(f"**j Component (North/South):** {j:,.2f} meters")
-                print(f"**Approximation:** Assumes a perfect sphere with radius approxamitely {EARTH_RADIUS_METERS / 1000}km.")
+                print(f"**Approximation:** Assumes a perfect sphere with radius approxamitely {(EARTH_RADIUS_METERS / 1000):.0f}km.")
                 print("---------------------------------------------------\n")
 
             except ValueError:
